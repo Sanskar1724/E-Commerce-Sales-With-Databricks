@@ -1,0 +1,963 @@
+{
+  "datasets": [
+    {
+      "name": "0dd65403",
+      "displayName": "Customer Counts by State Overview",
+      "queryLines": [
+        "USE CATALOG `workspace`;\n",
+        "USE SCHEMA `ei_dashboard`;\n",
+        "\n",
+        "SELECT state, COUNT(*) AS total_customers\n",
+        "FROM customers\n",
+        "GROUP BY state\n",
+        "ORDER BY total_customers DESC;"
+      ]
+    },
+    {
+      "name": "b75f82ad",
+      "displayName": "Active Customers by State",
+      "queryLines": [
+        "SELECT\n",
+        "  c.state,\n",
+        "  COUNT(DISTINCT c.customer_id) AS active_customers\n",
+        "FROM\n",
+        "  customers c\n",
+        "    JOIN (\n",
+        "      SELECT\n",
+        "        customer_id\n",
+        "      FROM\n",
+        "        orders\n",
+        "      GROUP BY\n",
+        "        customer_id\n",
+        "      HAVING\n",
+        "        COUNT(order_id) > 1\n",
+        "    ) repeat_buyers\n",
+        "      ON c.customer_id = repeat_buyers.customer_id\n",
+        "GROUP BY\n",
+        "  c.state\n",
+        "ORDER BY\n",
+        "  active_customers DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "ei_dashboard"
+    },
+    {
+      "name": "total_orders",
+      "displayName": "Total Orders",
+      "queryLines": [
+        "SELECT\n",
+        "  COUNT(*) AS total_orders\n",
+        "FROM\n",
+        "  orders"
+      ],
+      "catalog": "workspace",
+      "schema": "ei_dashboard"
+    },
+    {
+      "name": "orders_by_status",
+      "displayName": "Orders by Status",
+      "queryLines": [
+        "SELECT\n",
+        "  order_status,\n",
+        "  COUNT(*) AS order_count\n",
+        "FROM\n",
+        "  orders\n",
+        "GROUP BY\n",
+        "  order_status\n",
+        "ORDER BY\n",
+        "  order_count DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "ei_dashboard"
+    },
+    {
+      "name": "orders_per_customer",
+      "displayName": "Orders per Customer",
+      "queryLines": [
+        "SELECT\n",
+        "  order_count,\n",
+        "  COUNT(*) AS customer_count\n",
+        "FROM\n",
+        "  (\n",
+        "    SELECT\n",
+        "      customer_id,\n",
+        "      COUNT(order_id) AS order_count\n",
+        "    FROM\n",
+        "      orders\n",
+        "    GROUP BY\n",
+        "      customer_id\n",
+        "  )\n",
+        "GROUP BY\n",
+        "  order_count\n",
+        "ORDER BY\n",
+        "  order_count"
+      ],
+      "catalog": "workspace",
+      "schema": "ei_dashboard"
+    },
+    {
+      "name": "total_products",
+      "displayName": "Total Products",
+      "queryLines": [
+        "SELECT\n",
+        "  COUNT(*) AS total_products\n",
+        "FROM\n",
+        "  products"
+      ],
+      "catalog": "workspace",
+      "schema": "ei_dashboard"
+    },
+    {
+      "name": "top_expensive_products",
+      "displayName": "Top Expensive Products",
+      "queryLines": [
+        "SELECT\n",
+        "  product_name,\n",
+        "  product_price\n",
+        "FROM\n",
+        "  products\n",
+        "ORDER BY\n",
+        "  product_price DESC\n",
+        "LIMIT 5"
+      ],
+      "catalog": "workspace",
+      "schema": "ei_dashboard"
+    },
+    {
+      "name": "product_by_category",
+      "displayName": "Product Distribution by Category",
+      "queryLines": [
+        "SELECT\n",
+        "  c.category_name,\n",
+        "  COUNT(p.Product_id) AS product_count\n",
+        "FROM\n",
+        "  products p\n",
+        "    JOIN categories c\n",
+        "      ON p.Product_category_id = c.category_id\n",
+        "GROUP BY\n",
+        "  c.category_name\n",
+        "ORDER BY\n",
+        "  product_count DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "ei_dashboard"
+    },
+    {
+      "name": "category_by_department",
+      "displayName": "Category by Department",
+      "queryLines": [
+        "SELECT\n",
+        "  d.department_name,\n",
+        "  COUNT(c.category_id) AS category_count\n",
+        "FROM\n",
+        "  departments d\n",
+        "    LEFT JOIN categories c\n",
+        "      ON d.department_id = c.category_department_id\n",
+        "GROUP BY\n",
+        "  d.department_name\n",
+        "ORDER BY\n",
+        "  category_count DESC"
+      ],
+      "catalog": "workspace",
+      "schema": "ei_dashboard"
+    },
+    {
+      "name": "orders_over_time",
+      "displayName": "Orders Over Time",
+      "queryLines": [
+        "SELECT\n",
+        "  order_date,\n",
+        "  COUNT(*) AS order_count\n",
+        "FROM\n",
+        "  orders\n",
+        "GROUP BY\n",
+        "  order_date\n",
+        "ORDER BY\n",
+        "  order_date"
+      ],
+      "catalog": "workspace",
+      "schema": "ei_dashboard"
+    }
+  ],
+  "pages": [
+    {
+      "name": "e4bd52d0",
+      "displayName": "Ei_dashboard",
+      "layout": [
+        {
+          "widget": {
+            "name": "6c78a708",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "0dd65403",
+                  "fields": [
+                    {
+                      "name": "state",
+                      "expression": "`state`"
+                    },
+                    {
+                      "name": "total_customers",
+                      "expression": "`total_customers`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Customers by State",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "This analysis identifies geographic distribution of customers.\n\nThis problem helps identify the geographical distribution of customers. By grouping customers based on their state, we can see which regions have more users."
+              },
+              "mark": {
+                "colors": [
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 2
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 2
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 4
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 5
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 6
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 7
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 8
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 9
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 10
+                  }
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "state",
+                  "displayName": "State",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "total_customers",
+                  "displayName": "Total Customers",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "7165b22b",
+            "multilineTextboxSpec": {
+              "lines": [
+                "<span style=\"text-align:center;display:block\"><span style=\"font-family: Brush Script MT;font-size: 18px;\">**E-Commerce Sales & Customer Insights Dashboard**</span></span>"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "f7c81989",
+            "multilineTextboxSpec": {
+              "lines": [
+                "<span style=\"font-size:18px\">This dashboard analyzes customer behavior, product performance, and order trends on a structured e-commerce database.</span>"
+              ]
+            },
+            "specExtensions": {
+              "widgetBorderColor": {
+                "dark": "#191C11"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "e86b3cb9",
+            "multilineTextboxSpec": {
+              "lines": [
+                "<span style=\"font-size:18px\">Total Customers</span>\n",
+                "\n",
+                "🧾 Determine the total number of customers registered in the system.\n",
+                "\n",
+                "<span style=\"font-size:18px\">12,435</span>"
+              ]
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 4,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "beb48309",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "b75f82ad",
+                  "fields": [
+                    {
+                      "name": "state",
+                      "expression": "`state`"
+                    },
+                    {
+                      "name": "active_customers",
+                      "expression": "`active_customers`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Active Customers (Repeat Buyers)",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Customers who placed more than one order are considered active.\n\nThis problem focuses on customer behavior. Instead of just counting customers, we analyze how frequently they purchase. Customers with multiple orders are considered loyal or active customers."
+              },
+              "widgetType": "area",
+              "encodings": {
+                "x": {
+                  "fieldName": "state",
+                  "displayName": "State",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "active_customers",
+                  "displayName": "Active Customers",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 11,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "c7eaa1b2",
+            "multilineTextboxSpec": {
+              "lines": [
+                "<span style=\"font-size:24px\">**🔥 SECTION 2: ORDER ANALYSIS**</span>"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 17,
+            "width": 6,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "fa5a0262",
+            "multilineTextboxSpec": {
+              "lines": [
+                "<span style=\"font-size:24px\">**🔥 SECTION 1: CUSTOMER ANALYSIS**</span>"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 8,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "fe60392b",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "total_orders",
+                  "fields": [
+                    {
+                      "name": "total_orders",
+                      "expression": "`total_orders`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Orders",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Total number of orders placed on the platform."
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_orders",
+                  "displayName": "Total Orders"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 17,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "f0a135ed",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "orders_by_status",
+                  "fields": [
+                    {
+                      "name": "order_status",
+                      "expression": "`order_status`"
+                    },
+                    {
+                      "name": "order_count",
+                      "expression": "`order_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Orders by Status",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Distribution of orders based on their current status.\n\nOrders can have different statuses like completed, pending, cancelled. This problem groups orders based on their order_status to understand how many fall into each category."
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "order_status",
+                  "displayName": "Order Status",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "order_count",
+                  "displayName": "Order Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "2fe8380e",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "orders_per_customer",
+                  "fields": [
+                    {
+                      "name": "order_count",
+                      "expression": "`order_count`"
+                    },
+                    {
+                      "name": "customer_count",
+                      "expression": "`customer_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Orders per Customer",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Measures customer engagement based on number of orders.\n\nThis problem measures customer engagement by counting the number of orders per customer. It helps differentiate between one-time buyers and frequent users."
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "order_count",
+                  "displayName": "Order Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "customer_count",
+                  "displayName": "Customer Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 19,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "2761c69f",
+            "multilineTextboxSpec": {
+              "lines": [
+                "<span style=\"font-size:24px\">**🔥 SECTION 3: PRODUCT ANALYSIS**</span>"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 24,
+            "width": 7,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "03ee9b8a",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "total_products",
+                  "fields": [
+                    {
+                      "name": "total_products",
+                      "expression": "`total_products`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "title": "Total Products",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Total number of products available in the system."
+              },
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "total_products",
+                  "displayName": "Total Products"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 25,
+            "width": 3,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "c90158b5",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "top_expensive_products",
+                  "fields": [
+                    {
+                      "name": "product_name",
+                      "expression": "`product_name`"
+                    },
+                    {
+                      "name": "product_price",
+                      "expression": "`product_price`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Top Expensive Products",
+                "showTitle": true,
+                "showDescription": true,
+                "description": "Key insights from the chart:\n\nSOLE P85 Elliptical is the most expensive product at $1,999.99\nSOLE F85 Treadmill and SOLE PS5 Treadmill are tied at $1,799.99 each\nSpalding Beast 60\" Glass Portable basketball system is priced at $1,099.99"
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "product_name",
+                  "displayName": "Product Name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "product_price",
+                  "format": {
+                    "type": "number-currency",
+                    "currencyCode": "USD",
+                    "decimalPlaces": {
+                      "type": "exact",
+                      "places": 2
+                    },
+                    "abbreviation": "none"
+                  },
+                  "displayName": "Product Price",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 25,
+            "width": 9,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "2baeb3e9",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "product_by_category",
+                  "fields": [
+                    {
+                      "name": "category_name",
+                      "expression": "`category_name`"
+                    },
+                    {
+                      "name": "product_count",
+                      "expression": "`product_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Product Distribution by Category",
+                "showTitle": true
+              },
+              "mark": {
+                "colors": [
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 8
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 2
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 3
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 4
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 5
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 6
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 7
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 8
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 9
+                  },
+                  {
+                    "themeColorType": "visualizationColors",
+                    "position": 10
+                  }
+                ]
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "category_name",
+                  "displayName": "Category Name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "product_count",
+                  "displayName": "Product Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 31,
+            "width": 12,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "2f3cd6e5",
+            "multilineTextboxSpec": {
+              "lines": [
+                "<span style=\"font-size:24px\">**🔥 SECTION 4: BUSINESS STRUCTURE ANALYSIS**</span>"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 39,
+            "width": 10,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "bc55ce83",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "category_by_department",
+                  "fields": [
+                    {
+                      "name": "department_name",
+                      "expression": "`department_name`"
+                    },
+                    {
+                      "name": "category_count",
+                      "expression": "`category_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Category by Department",
+                "showTitle": true
+              },
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "department_name",
+                  "displayName": "Department Name",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "category_count",
+                  "displayName": "Category Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "label": {
+                  "show": true
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 40,
+            "width": 10,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "5fc73df9",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "orders_over_time",
+                  "fields": [
+                    {
+                      "name": "order_date",
+                      "expression": "`order_date`"
+                    },
+                    {
+                      "name": "order_count",
+                      "expression": "`order_count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "frame": {
+                "title": "Orders Over Time",
+                "showTitle": true
+              },
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "order_date",
+                  "displayName": "Order Date",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "order_count",
+                  "displayName": "Order Count",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 46,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
